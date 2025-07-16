@@ -1,10 +1,11 @@
 ﻿using FileService.Contracts.IServices;
 using FileService.Enums;
-using LoggingService.Contracts.IServices;
-using LoggingService.Enums;
 using MessageService.Contracts.IServices;
 using PersistenceService.Contracts.IRepositories;
 using PersistenceService.Entities;
+using Shared;
+using Shared.Enums;
+using Shared.Requests;
 
 namespace FileService.Services;
 
@@ -12,7 +13,7 @@ public class FileProcessingService(
     IMessageProcessingService messageProcessingService,
     ISwiftFileEntityRepository swiftFileRepository,
     IFileMovingService fileMovingService,
-    ILoggerService logService) : IFileProcessingService
+    IProducer producer) : IFileProcessingService
 {
     public async Task ProcessAsync(FileSystemEventArgs e)
     {
@@ -26,7 +27,11 @@ public class FileProcessingService(
 
         foreach (var tuple in messages)
         {
-            logService.Log($"[FileProcessingService]: Processing message #{tuple.Index}", LogType.Information);
+            await producer.PublishMessageToLoggingService(new LoggingRequest
+            {
+                Message = $"[FileProcessingService]: Processing message #{tuple.Index}",
+                LogType = LogType.Information,
+            });
             
             var swiftMessage = await messageProcessingService.Process(tuple.Message);
             

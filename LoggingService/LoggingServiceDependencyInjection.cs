@@ -1,4 +1,5 @@
-﻿using LoggingService.Contracts.IServices;
+﻿using LoggingService.Consumer;
+using LoggingService.Contracts.IServices;
 using LoggingService.Services;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -8,8 +9,8 @@ public static class LoggingServiceDependencyInjection
 {
     public static void AddLoggerService(this IServiceCollection services)
     {
-        services.AddScoped<ILoggerService, LoggerService>();
-        services.AddSingleton<IRabbitMqListener, RabbitMqListener>();
-        services.AddHostedService<BackgroundConsumerService>();
+        services.AddSingleton<ILoggerService, LoggerService>();
+        services.AddSingleton<ILoggingServiceConsumer, LoggingServiceConsumer>();
+        services.AddHostedService<ConsumerBackgroundService>();
     }
 }

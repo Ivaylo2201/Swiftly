@@ -1,4 +1,4 @@
-﻿namespace LoggingService.Enums;
+﻿namespace Shared.Enums;
 
 public enum LogType
 {

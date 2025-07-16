@@ -1,11 +1,11 @@
 ﻿using System.Text;
 using System.Text.Json;
 using LoggingService.Contracts.IServices;
-using LoggingService.Enums;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using Shared.Enums;
 
-namespace LoggingService;
+namespace LoggingService.Consumer;
 
 public record RequestBody
 {
@@ -13,7 +13,7 @@ public record RequestBody
     public required int LogTypeId { get; init; }
 }
 
-public class RabbitMqListener(ILoggerService loggerService) : IRabbitMqListener
+public class LoggingServiceConsumer(ILoggerService loggerService) : ILoggingServiceConsumer
 {
     private const string QueueName = "services.logging";
     private IConnection? _connection;
@@ -51,7 +51,7 @@ public class RabbitMqListener(ILoggerService loggerService) : IRabbitMqListener
             }
             catch (JsonException)
             {
-                Console.WriteLine("Failed to parse the payload");
+                loggerService.Log("Unable to parse the payload.", LogType.Error);
             }
             
             return Task.CompletedTask;

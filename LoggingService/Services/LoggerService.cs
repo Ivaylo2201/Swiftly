@@ -1,5 +1,5 @@
 ﻿using LoggingService.Contracts.IServices;
-using LoggingService.Enums;
+using Shared.Enums;
 
 namespace LoggingService.Services;
 

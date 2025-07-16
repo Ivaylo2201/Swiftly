@@ -1,22 +1,39 @@
-﻿using LoggingService.Contracts.IServices;
-using LoggingService.Enums;
+﻿using Shared;
+using Shared.Enums;
+using Shared.Requests;
 
 namespace PersistenceService.Seed;
 
-public class Seeder(DatabaseContext context, ILoggerService loggerService) : Data
+public class Seeder(
+    DatabaseContext context,
+    IProducer producer) : Data
 {
     public async Task Run()
     {
         try
         {
-            loggerService.Log("[Seeder]: Beginning database seed...", LogType.Information);
+            await producer.PublishMessageToLoggingService(new LoggingRequest
+            {
+                Message = "[Seeder]: Beginning database seed...",
+                LogType = LogType.Information
+            });
+            
             await Clear();
             await Seed();
-            loggerService.Log("[Seeder]: Database seed done.", LogType.Success);
+            
+            await producer.PublishMessageToLoggingService(new LoggingRequest
+            {
+                Message = "[Seeder]: Database seed done.",
+                LogType = LogType.Success
+            });
         }
         catch (Exception ex)
         {
-            loggerService.Log($"[Seeder]: {ex.Message}", LogType.Error);
+            await producer.PublishMessageToLoggingService(new LoggingRequest
+            {
+                Message = $"[Seeder]: {ex.Message}",
+                LogType = LogType.Error
+            });
         }
     }
     

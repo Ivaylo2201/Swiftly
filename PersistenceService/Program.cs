@@ -1,3 +1,15 @@
-﻿// See https://aka.ms/new-console-template for more information
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using PersistenceService;
+using PersistenceService.Seed;
 
-Console.WriteLine("Hello, World!");
+using var host = Host.CreateDefaultBuilder(args)
+    .ConfigureServices((_, services) => services.AddPersistenceService())
+    .Build();
+    
+if (args.Contains("seed"))
+{
+    using var scope = host.Services.CreateScope();
+    var seeder = scope.ServiceProvider.GetRequiredService<Seeder>();
+    await seeder.Run();
+}

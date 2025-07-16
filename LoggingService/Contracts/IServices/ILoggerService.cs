@@ -1,4 +1,4 @@
-﻿using LoggingService.Enums;
+﻿using Shared.Enums;
 
 namespace LoggingService.Contracts.IServices;
 

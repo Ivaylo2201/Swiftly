@@ -1,6 +1,6 @@
 ﻿using FileService.Contracts.IServices;
 using LoggingService.Contracts.IServices;
-using LoggingService.Enums;
+using Shared.Enums;
 
 namespace FileService.Services;
 

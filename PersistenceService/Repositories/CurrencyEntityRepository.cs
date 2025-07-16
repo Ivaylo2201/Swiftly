@@ -1,15 +1,16 @@
-﻿using LoggingService.Contracts.IServices;
-using LoggingService.Enums;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using PersistenceService.Contracts.IRepositories;
 using PersistenceService.Entities;
 using PersistenceService.Exceptions;
+using Shared;
+using Shared.Enums;
+using Shared.Requests;
 
 namespace PersistenceService.Repositories;
 
 public class CurrencyEntityRepository(
     DatabaseContext context, 
-    ILoggerService logService) : ICurrencyEntityRepository
+    IProducer producer) : ICurrencyEntityRepository
 {
     public async Task<CurrencyEntity> GetByCurrencyCodeAsync(string currencyCode)
     {
@@ -21,7 +22,12 @@ public class CurrencyEntityRepository(
         
         var errorMessage = $"Currency with CurrencyCode '{currencyCode}' not found.";
         
-        logService.Log(errorMessage, LogType.Error);
+        await producer.PublishMessageToLoggingService(new LoggingRequest
+        {
+            Message = errorMessage,
+            LogType = LogType.Error,
+        });
+        
         throw new EntityNotFoundException(errorMessage);
     }
 }

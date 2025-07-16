@@ -4,5 +4,5 @@ namespace MessageService.Contracts.IServices;
 
 public interface IMessageParsingService
 {
-    RawMessageDto? ParseToRawMessageDto(string rawMessage);
+    Task<RawMessageDto?> ParseToRawMessageDto(string rawMessage);
 }

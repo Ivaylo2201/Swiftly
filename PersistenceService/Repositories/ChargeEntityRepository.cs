@@ -1,15 +1,16 @@
-﻿using LoggingService.Contracts.IServices;
-using LoggingService.Enums;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using PersistenceService.Contracts.IRepositories;
 using PersistenceService.Entities;
 using PersistenceService.Exceptions;
+using Shared;
+using Shared.Enums;
+using Shared.Requests;
 
 namespace PersistenceService.Repositories;
 
 public class ChargeEntityRepository(
     DatabaseContext context, 
-    ILoggerService logService) : IChargeEntityRepository
+    IProducer producer) : IChargeEntityRepository
 {
     public async Task<ChargeEntity> GetByChargeCodeAsync(string chargeCode)
     {
@@ -19,7 +20,13 @@ public class ChargeEntityRepository(
             return charge;
         
         var errorMessage = $"Charge with ChargeCode '{chargeCode}' not found.";
-        logService.Log(errorMessage, LogType.Error);
+        
+        await producer.PublishMessageToLoggingService(new LoggingRequest
+        {
+            Message = errorMessage,
+            LogType = LogType.Error,
+        });
+        
         throw new EntityNotFoundException(errorMessage);
     }
 }

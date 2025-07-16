@@ -1,19 +1,25 @@
-﻿using LoggingService.Contracts.IServices;
-using LoggingService.Enums;
-using MessageService.Contracts.IServices;
+﻿using MessageService.Contracts.IServices;
 using MessageService.DTOs;
+using Shared;
+using Shared.Enums;
+using Shared.Requests;
 
 namespace MessageService.Services;
 
-public class MessageParsingService(ILoggerService loggerService) : IMessageParsingService
+public class MessageParsingService(IProducer producer) : IMessageParsingService
 {
-    public RawMessageDto? ParseToRawMessageDto(string rawMessage)
+    public async Task<RawMessageDto?> ParseToRawMessageDto(string rawMessage)
     {
         var match = Constants.Patterns.MessageParseRegex().Match(rawMessage);
 
         if (!match.Success)
         {
-            loggerService.Log("[MessageParserService]: Syntax error detected, message parsing terminated.", LogType.Error);
+            await producer.PublishMessageToLoggingService(new LoggingRequest
+            {
+                Message = "[MessageParserService]: Syntax error detected, message parsing terminated.",
+                LogType = LogType.Error
+            });
+            
             return null;
         }
 

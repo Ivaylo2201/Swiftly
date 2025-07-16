@@ -15,6 +15,7 @@
       <ProjectReference Include="..\LoggingService\LoggingService.csproj" />
       <ProjectReference Include="..\MessageService\MessageService.csproj" />
       <ProjectReference Include="..\PersistenceService\PersistenceService.csproj" />
+      <ProjectReference Include="..\Shared\Shared.csproj" />
     </ItemGroup>
 
 </Project>

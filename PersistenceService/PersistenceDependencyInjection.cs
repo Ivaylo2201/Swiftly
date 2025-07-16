@@ -9,15 +9,21 @@ namespace PersistenceService;
 
 public static class PersistenceDependencyInjection
 {
-    public static void AddPersistenceService(this IServiceCollection services, IConfiguration configuration)
+    public static void AddPersistenceService(this IServiceCollection services)
     {
         services.AddDbContext<DatabaseContext>(options =>
         {
-            var connectionString = configuration.GetConnectionString("DefaultConnection");
+            var config = new ConfigurationBuilder()
+                .SetBasePath(AppContext.BaseDirectory)
+                .AddJsonFile("appsettings.json")
+                .Build();
+            
+            var connectionString = config.GetConnectionString("DefaultConnection");
+
             options.UseSqlServer(connectionString, builder => 
                 builder.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
         });
-
+        
         services.AddScoped<IBankOperationEntityRepository, BankOperationEntityRepository>();
         services.AddScoped<IChargeEntityRepository, ChargeEntityRepository>();
         services.AddScoped<ICurrencyEntityRepository, CurrencyEntityRepository>();

@@ -1,13 +1,16 @@
-﻿using LoggingService.Contracts.IServices;
-using LoggingService.Enums;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using PersistenceService.Contracts.IRepositories;
 using PersistenceService.Entities;
 using PersistenceService.Exceptions;
+using Shared;
+using Shared.Enums;
+using Shared.Requests;
 
 namespace PersistenceService.Repositories;
 
-public class BankOperationEntityRepository(DatabaseContext context, ILoggerService logService) : IBankOperationEntityRepository
+public class BankOperationEntityRepository(
+    DatabaseContext context, 
+    IProducer producer) : IBankOperationEntityRepository
 {
     public async Task<BankOperationEntity> GetByBankOperationCodeAsync(string bankOperationCode)
     {
@@ -18,7 +21,12 @@ public class BankOperationEntityRepository(DatabaseContext context, ILoggerServi
             return bankOperation;
         
         var errorMessage = $"Bank operation with BankOperationCode '{bankOperationCode}' not found.";
-        logService.Log(errorMessage, LogType.Error);
+        
+        await producer.PublishMessageToLoggingService(new LoggingRequest
+        {
+            Message = errorMessage,
+            LogType = LogType.Error,
+        });
             
         throw new EntityNotFoundException(errorMessage);
     }
