@@ -16,7 +16,7 @@ public class MessageParsingService(IProducer producer) : IMessageParsingService
         {
             await producer.PublishMessageToLoggingService(new LoggingRequest
             {
-                Message = "[MessageParserService]: Syntax error detected, message parsing terminated.",
+                Message = "[MessageParsingService]: Syntax error detected, message parsing terminated.",
                 LogType = LogType.Error
             });
             

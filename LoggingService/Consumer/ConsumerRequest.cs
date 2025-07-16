@@ -4,5 +4,5 @@
 public class ConsumerRequest
 {
     public required string Message { get; init; }
-    public required int LogTypeId { get; init; }
+    public required int LogType { get; init; }
 }

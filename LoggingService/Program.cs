@@ -1,3 +1,16 @@
-﻿// See https://aka.ms/new-console-template for more information
+﻿using LoggingService;
+using LoggingService.Consumer;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Shared;
 
-Console.WriteLine("Hello, World!");
+var host = Host.CreateDefaultBuilder(args)
+    .ConfigureServices((_, services) =>
+    {
+        services.AddHostedService<ConsumerBackgroundService>();
+        services.AddScoped<IConsumer, Consumer>();
+        services.AddLoggingService();
+    })
+    .Build();
+
+await host.RunAsync();

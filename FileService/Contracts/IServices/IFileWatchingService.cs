@@ -2,5 +2,5 @@
 
 public interface IFileWatchingService
 {
-    Task Watch();
+    Task Watch(CancellationToken cancellationToken);
 }

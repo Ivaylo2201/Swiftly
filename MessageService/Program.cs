@@ -1,3 +1,8 @@
-﻿// See https://aka.ms/new-console-template for more information
+﻿using MessageService;
+using Microsoft.Extensions.Hosting;
 
-Console.WriteLine("Hello, World!");
+var host = Host.CreateDefaultBuilder(args)
+    .ConfigureServices((_, services) => services.AddMessageService())
+    .Build();
+
+await host.RunAsync();

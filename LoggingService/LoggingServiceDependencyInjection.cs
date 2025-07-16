@@ -7,7 +7,7 @@ namespace LoggingService;
 
 public static class LoggingServiceDependencyInjection
 {
-    public static void AddLoggerService(this IServiceCollection services)
+    public static void AddLoggingService(this IServiceCollection services)
     {
         services.AddSingleton<ILoggerService, LoggerService>();
         services.AddSingleton<ILoggingServiceConsumer, LoggingServiceConsumer>();

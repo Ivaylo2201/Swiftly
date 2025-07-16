@@ -20,7 +20,7 @@ public class LoggingServiceConsumer(ILoggerService loggerService, IConsumer cons
                 if (payload is null)
                     return Task.CompletedTask;
                 
-                var logType = payload.LogTypeId switch
+                var logType = payload.LogType switch
                 {
                     0 => LogType.Success,
                     1 => LogType.Error,
