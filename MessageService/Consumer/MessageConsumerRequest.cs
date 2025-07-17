@@ -1,6 +1,6 @@
-﻿namespace Shared.Requests;
+﻿namespace MessageService.Consumer;
 
-public record MessageRequest
+public class MessageConsumerRequest
 {
     public required string Message { get; init; }
     public required int Index { get; init; }

@@ -1,6 +1,6 @@
 ﻿using RabbitMQ.Client.Events;
 
-namespace Shared;
+namespace Shared.Consumer;
 
 public interface IConsumer
 {

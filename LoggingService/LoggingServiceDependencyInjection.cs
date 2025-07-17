@@ -11,6 +11,6 @@ public static class LoggingServiceDependencyInjection
     {
         services.AddSingleton<ILoggerService, LoggerService>();
         services.AddSingleton<ILoggingServiceConsumer, LoggingServiceConsumer>();
-        services.AddHostedService<ConsumerBackgroundService>();
+        services.AddHostedService<LoggingBackgroundService>();
     }
 }

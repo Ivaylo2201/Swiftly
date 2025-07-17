@@ -4,6 +4,7 @@ using PersistenceService.Entities;
 using PersistenceService.Exceptions;
 using Shared;
 using Shared.Enums;
+using Shared.Producer;
 using Shared.Requests;
 
 namespace PersistenceService.Repositories;
@@ -21,10 +22,10 @@ public class ChargeEntityRepository(
         
         var errorMessage = $"Charge with ChargeCode '{chargeCode}' not found.";
         
-        await producer.PublishMessageToLoggingService(new LoggingRequest
+        await producer.PublishToLoggingService(new LoggingRequest
         {
             Message = errorMessage,
-            LogType = LogType.Error,
+            LogType = LogType.Error
         });
         
         throw new EntityNotFoundException(errorMessage);

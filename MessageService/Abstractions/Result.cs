@@ -19,7 +19,7 @@ public class Result
     public static Result Success() => new(true, null);
     public static Result Failure(string? error) => new(false, error);
     public static Result<T> Success<T>(T value) => new(true, null, value);
-    public static Result<T> Failure<T>(string? error) => new(false, error, default!);
+    public static Result<T> Failure<T>(string? error = null) => new(false, error, default!);
     
 }
 

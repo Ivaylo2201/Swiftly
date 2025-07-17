@@ -1,5 +1,6 @@
 ﻿using Shared;
 using Shared.Enums;
+using Shared.Producer;
 using Shared.Requests;
 
 namespace PersistenceService.Seed;
@@ -12,7 +13,7 @@ public class Seeder(
     {
         try
         {
-            await producer.PublishMessageToLoggingService(new LoggingRequest
+            await producer.PublishToLoggingService(new LoggingRequest
             {
                 Message = "[Seeder]: Beginning database seed...",
                 LogType = LogType.Information
@@ -21,7 +22,7 @@ public class Seeder(
             await Clear();
             await Seed();
             
-            await producer.PublishMessageToLoggingService(new LoggingRequest
+            await producer.PublishToLoggingService(new LoggingRequest
             {
                 Message = "[Seeder]: Database seed done.",
                 LogType = LogType.Success
@@ -29,7 +30,7 @@ public class Seeder(
         }
         catch (Exception ex)
         {
-            await producer.PublishMessageToLoggingService(new LoggingRequest
+            await producer.PublishToLoggingService(new LoggingRequest
             {
                 Message = $"[Seeder]: {ex.Message}",
                 LogType = LogType.Error

@@ -1,6 +1,7 @@
 ﻿using FileService.Contracts.IServices;
 using Shared;
 using Shared.Enums;
+using Shared.Producer;
 using Shared.Requests;
 
 namespace FileService.Services;
@@ -11,14 +12,13 @@ public class FileWatchingService(
 {
     private async Task OnCreatedAsync(object _, FileSystemEventArgs e)
     {
-        Console.WriteLine("here");
         try
         {
             await fileProcessingService.ProcessAsync(e);
         }
         catch (Exception ex)
         {
-            await producer.PublishMessageToLoggingService(new LoggingRequest
+            await producer.PublishToLoggingService(new LoggingRequest
             {
                 Message = $"[FileWatchingService]: An exception occurred - {ex.Message}",
                 LogType = LogType.Error,
@@ -38,7 +38,7 @@ public class FileWatchingService(
         
         fileSystemWatcher.Created += (s, e) => _ = OnCreatedAsync(s, e);
 
-        await producer.PublishMessageToLoggingService(new LoggingRequest
+        await producer.PublishToLoggingService(new LoggingRequest
         {
             Message = "[FileWatchingService]: Watching...",
             LogType = LogType.Information

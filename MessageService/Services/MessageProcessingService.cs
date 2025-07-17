@@ -5,8 +5,8 @@ using MessageService.Validators;
 using PersistenceService.Contracts.IRepositories;
 using PersistenceService.Entities;
 using PersistenceService.Exceptions;
-using Shared;
 using Shared.Enums;
+using Shared.Producer;
 using Shared.Requests;
 
 namespace MessageService.Services;
@@ -20,12 +20,12 @@ public class MessageProcessingService(
     IMessageParsingService messageParsingService,
     IProducer producer) : IMessageProcessingService
 {
-    public async Task<Result<SwiftMessageEntity>> Process(string rawMessage)
+    public async Task<Result<SwiftMessageEntity>> Process(string rawMessage, int index)
     {
         var rawMessageDto = await messageParsingService.ParseToRawMessageDto(rawMessage);
-
-        if (rawMessageDto == null)
-            return Result.Failure<SwiftMessageEntity>("Syntax error");
+        
+        if (rawMessageDto is null)
+            return Result.Failure<SwiftMessageEntity>();
         
         var result = await new RawMessageDtoValidator().ValidateAsync(rawMessageDto);
         
@@ -33,9 +33,9 @@ public class MessageProcessingService(
         {
             var errors = string.Join(", ", result.Errors.Select(error => error.ErrorMessage));
 
-            await producer.PublishMessageToLoggingService(new LoggingRequest
+            await producer.PublishToLoggingService(new LoggingRequest
             {
-                Message = $"[MessageProcessingService]: Validation errors - {errors}",
+                Message = $"[MessageProcessingService]: Validation errors at Message #{index} - {errors}",
                 LogType = LogType.Error
             });
             
@@ -80,9 +80,9 @@ public class MessageProcessingService(
             
             await swiftMessageRepository.CreateAsync(swiftMessage);
             
-            await producer.PublishMessageToLoggingService(new LoggingRequest
+            await producer.PublishToLoggingService(new LoggingRequest
             {
-                Message = "[MessageProcessingService]: RawMessageDto successfully processed to a SwiftMessage",
+                Message = $"[MessageProcessingService]: Message #{index} successfully processed to a SwiftMessage",
                 LogType = LogType.Success
             });
             
@@ -90,9 +90,9 @@ public class MessageProcessingService(
         }
         catch (EntityNotFoundException exception)
         {
-            await producer.PublishMessageToLoggingService(new LoggingRequest
+            await producer.PublishToLoggingService(new LoggingRequest
             {
-                Message = $"[MessageProcessingService]: EntityNotFoundException - {exception.Message}",
+                Message = $"[MessageProcessingService]: EntityNotFoundException at Message #{index} - {exception.Message}",
                 LogType = LogType.Error
             });
             
@@ -100,9 +100,9 @@ public class MessageProcessingService(
         }
         catch (Exception exception)
         {
-            await producer.PublishMessageToLoggingService(new LoggingRequest
+            await producer.PublishToLoggingService(new LoggingRequest
             {
-                Message = $"[MessageProcessingService]: Exception - {exception.Message}",
+                Message = $"[MessageProcessingService]: {exception.GetType().FullName} at Message #{index} - {exception.Message}",
                 LogType = LogType.Error
             });
             

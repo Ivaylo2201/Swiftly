@@ -4,6 +4,8 @@ using Microsoft.Extensions.DependencyInjection;
 using PersistenceService.Contracts.IRepositories;
 using PersistenceService.Repositories;
 using PersistenceService.Seed;
+using Shared.Consumer;
+using Shared.Producer;
 
 namespace PersistenceService;
 
@@ -30,6 +32,8 @@ public static class PersistenceDependencyInjection
         services.AddScoped<ISwiftMessageEntityRepository, SwiftMessageEntityRepository>();
         services.AddScoped<IUserEntityRepository, UserEntityRepository>();
         services.AddScoped<ISwiftFileEntityRepository, SwiftFileEntityRepository>();
+        services.AddScoped<IProducer, Producer>();
+        services.AddScoped<IConsumer, Consumer>();
         services.AddTransient<Seeder>();
     }
 }

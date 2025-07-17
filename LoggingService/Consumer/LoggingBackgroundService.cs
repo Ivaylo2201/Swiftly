@@ -2,7 +2,7 @@
 
 namespace LoggingService.Consumer;
 
-public class ConsumerBackgroundService(ILoggingServiceConsumer loggingServiceConsumer) : BackgroundService
+public class LoggingBackgroundService(ILoggingServiceConsumer loggingServiceConsumer) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {

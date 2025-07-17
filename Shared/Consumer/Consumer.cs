@@ -1,7 +1,7 @@
 ﻿using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
-namespace Shared;
+namespace Shared.Consumer;
 
 public class Consumer : IConsumer
 {

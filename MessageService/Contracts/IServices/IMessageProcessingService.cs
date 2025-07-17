@@ -5,5 +5,5 @@ namespace MessageService.Contracts.IServices;
 
 public interface IMessageProcessingService
 {
-    Task<Result<SwiftMessageEntity>> Process(string rawMessage);
+    Task<Result<SwiftMessageEntity>> Process(string rawMessage, int index);
 }
