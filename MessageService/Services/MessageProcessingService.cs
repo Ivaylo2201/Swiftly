@@ -20,6 +20,8 @@ public class MessageProcessingService(
     IMessageParsingService messageParsingService,
     IProducer producer) : IMessageProcessingService
 {
+    private string ServiceName => GetType().Name;
+    
     public async Task<Result<SwiftMessageEntity>> Process(string rawMessage, int index)
     {
         var rawMessageDto = await messageParsingService.ParseToRawMessageDto(rawMessage);
@@ -35,7 +37,7 @@ public class MessageProcessingService(
 
             await producer.PublishToLoggingService(new LoggingRequest
             {
-                Message = $"[MessageProcessingService]: Validation errors at Message #{index} - {errors}",
+                Message = $"[{ServiceName}]: Validation errors at Message #{index} - {errors}",
                 LogType = LogType.Error
             });
             
@@ -82,31 +84,31 @@ public class MessageProcessingService(
             
             await producer.PublishToLoggingService(new LoggingRequest
             {
-                Message = $"[MessageProcessingService]: Message #{index} successfully processed to a SwiftMessage",
+                Message = $"[{ServiceName}]: Message #{index} successfully processed to a SwiftMessage",
                 LogType = LogType.Success
             });
             
             return Result.Failure<SwiftMessageEntity>("Syntax error");
         }
-        catch (EntityNotFoundException exception)
+        catch (EntityNotFoundException ex)
         {
             await producer.PublishToLoggingService(new LoggingRequest
             {
-                Message = $"[MessageProcessingService]: EntityNotFoundException at Message #{index} - {exception.Message}",
+                Message = $"[{ServiceName}]: {ex.GetType().FullName} at Message #{index} - {ex.Message}",
                 LogType = LogType.Error
             });
             
-            return Result.Failure<SwiftMessageEntity>(exception.Message);
+            return Result.Failure<SwiftMessageEntity>(ex.Message);
         }
-        catch (Exception exception)
+        catch (Exception ex)
         {
             await producer.PublishToLoggingService(new LoggingRequest
             {
-                Message = $"[MessageProcessingService]: {exception.GetType().FullName} at Message #{index} - {exception.Message}",
+                Message = $"[{ServiceName}]: {ex.GetType().FullName} at Message #{index} - {ex.Message}",
                 LogType = LogType.Error
             });
             
-            return Result.Failure<SwiftMessageEntity>(exception.Message);
+            return Result.Failure<SwiftMessageEntity>(ex.Message);
         }
     }
 }

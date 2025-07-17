@@ -1,5 +1,4 @@
 ﻿using FileService.Contracts.IServices;
-using Shared;
 using Shared.Enums;
 using Shared.Producer;
 using Shared.Requests;
@@ -10,6 +9,8 @@ public class FileWatchingService(
     IFileProcessingService fileProcessingService,
     IProducer producer) : IFileWatchingService
 {
+    private string ServiceName => GetType().Name;
+    
     private async Task OnCreatedAsync(object _, FileSystemEventArgs e)
     {
         try
@@ -20,7 +21,7 @@ public class FileWatchingService(
         {
             await producer.PublishToLoggingService(new LoggingRequest
             {
-                Message = $"[FileWatchingService]: An exception occurred - {ex.Message}",
+                Message = $"[{ServiceName}]: An exception occurred - {ex.Message}",
                 LogType = LogType.Error,
             });
         }
@@ -40,7 +41,7 @@ public class FileWatchingService(
 
         await producer.PublishToLoggingService(new LoggingRequest
         {
-            Message = "[FileWatchingService]: Watching...",
+            Message = $"[{ServiceName}]: Watching...",
             LogType = LogType.Information
         });
         

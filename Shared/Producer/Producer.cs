@@ -29,11 +29,11 @@ public class Producer : IProducer
     }
     
     public async Task PublishToLoggingService(LoggingRequest request, BasicProperties? props) 
-        => await PublishMessageAsync("services.logging", request, props);
+        => await PublishMessageAsync(Queues.Logging, request, props);
 
     public async Task PublishToFileService(FileRequest request, BasicProperties? props)
-        => await PublishMessageAsync("services.file", request, props);
+        => await PublishMessageAsync(Queues.File, request, props);
     
     public async Task PublishToMessageService(MessageRequest request, BasicProperties? props) 
-        => await PublishMessageAsync("services.message", request, props);
+        => await PublishMessageAsync(Queues.Message, request, props);
 }

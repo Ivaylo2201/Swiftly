@@ -2,7 +2,6 @@
 using LoggingService.Consumer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Shared;
 using Shared.Consumer;
 
 var host = Host.CreateDefaultBuilder(args)

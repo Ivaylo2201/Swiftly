@@ -14,6 +14,8 @@ public class FileProcessingService(
     IFileMovingService fileMovingService,
     IProducer producer) : IFileProcessingService
 {
+    private string ServiceName => GetType().Name;
+    
     public async Task ProcessAsync(FileSystemEventArgs e)
     {
         var content = await File.ReadAllTextAsync(e.FullPath);
@@ -27,7 +29,7 @@ public class FileProcessingService(
         {
             await producer.PublishToLoggingService(new LoggingRequest
             {
-                Message = $"[FileProcessingService]: Processing message #{tuple.Index}",
+                Message = $"[{ServiceName}]: Processing message #{tuple.Index}",
                 LogType = LogType.Information,
             });
 

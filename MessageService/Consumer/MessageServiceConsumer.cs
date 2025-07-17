@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Text.Json;
 using MessageService.Contracts.IServices;
-using RabbitMQ.Client;
+using Shared;
 using Shared.Consumer;
 using Shared.Enums;
 using Shared.Producer;
@@ -14,9 +14,11 @@ public class MessageServiceConsumer(
     IConsumer consumer,
     IProducer producer) : IMessageServiceConsumer
 {
+    private string ServiceName => GetType().Name;
+    
     public async Task StartConsumingAsync(CancellationToken cancellationToken)
     {
-        await consumer.BasicConsumeAsync("services.message", async (_, ea) =>
+        await consumer.BasicConsumeAsync(Queues.Message, async (_, ea) =>
         {
             try
             {
@@ -27,7 +29,7 @@ public class MessageServiceConsumer(
                 {
                     await producer.PublishToLoggingService(new LoggingRequest
                     {
-                        Message = "[MessageServiceConsumer]: Payload parsing returned null.",
+                        Message = $"[{ServiceName}]: Payload parsing returned null.",
                         LogType = LogType.Error
                     });
 
@@ -40,7 +42,7 @@ public class MessageServiceConsumer(
             {
                 await producer.PublishToLoggingService(new LoggingRequest
                 {
-                    Message = $"[MessageServiceConsumer]: Unable to parse the payload. - ${ex.Message}",
+                    Message = $"[{ServiceName}]: Unable to parse the payload. - ${ex.Message}",
                     LogType = LogType.Error
                 });
             }

@@ -9,9 +9,11 @@ namespace LoggingService.Consumer;
 
 public class LoggingServiceConsumer(ILoggerService loggerService, IConsumer consumer) : ILoggingServiceConsumer
 {
+    private string ServiceName => GetType().Name;
+    
     public async Task StartConsumingAsync(CancellationToken cancellationToken)
     {
-        await consumer.BasicConsumeAsync("services.logging", (_, ea) =>
+        await consumer.BasicConsumeAsync(Queues.Logging, (_, ea) =>
         {
             try
             {
@@ -33,7 +35,7 @@ public class LoggingServiceConsumer(ILoggerService loggerService, IConsumer cons
             }
             catch (JsonException ex)
             {
-                loggerService.Log($"[LoggingServiceConsumer]: Unable to parse the payload. - ${ex.Message}", LogType.Error);
+                loggerService.Log($"[{ServiceName}]: Unable to parse the payload. - ${ex.Message}", LogType.Error);
             }
             
             return Task.CompletedTask;

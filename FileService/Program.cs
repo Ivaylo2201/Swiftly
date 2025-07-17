@@ -1,7 +1,6 @@
 ﻿using FileService;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Shared;
 using Shared.Producer;
 
 var host = Host.CreateDefaultBuilder(args)

@@ -2,8 +2,6 @@
 using FileService.Services;
 using Microsoft.Extensions.DependencyInjection;
 using PersistenceService;
-using PersistenceService.Contracts.IRepositories;
-using PersistenceService.Repositories;
 
 namespace FileService;
 

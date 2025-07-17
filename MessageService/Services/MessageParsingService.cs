@@ -8,6 +8,8 @@ namespace MessageService.Services;
 
 public class MessageParsingService(IProducer producer) : IMessageParsingService
 {
+    private string ServiceName => GetType().Name;
+    
     public async Task<RawMessageDto?> ParseToRawMessageDto(string rawMessage)
     {
         var match = Constants.Patterns.MessageParseRegex().Match(rawMessage);
@@ -16,7 +18,7 @@ public class MessageParsingService(IProducer producer) : IMessageParsingService
         {
             await producer.PublishToLoggingService(new LoggingRequest
             {
-                Message = "[MessageParsingService]: Syntax error detected, message parsing terminated.",
+                Message = $"[{ServiceName}]: Syntax error detected, message parsing terminated.",
                 LogType = LogType.Error
             });
 
