@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using System.Text.Json;
 using FileService.Contracts.IServices;
 using FileService.Enums;
 using PersistenceService.Contracts.IRepositories;
@@ -8,13 +7,15 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Shared;
 using Shared.Enums;
+using Shared.Producer;
 using Shared.Requests;
 
 namespace FileService.Services;
 
 public class FileProcessingService(
     ISwiftFileEntityRepository swiftFileRepository,
-    IFileMovingService fileMovingService) : IFileProcessingService
+    IFileMovingService fileMovingService,
+    IProducer producer) : IFileProcessingService
 {
     private string ServiceName => GetType().Name;
     
@@ -31,6 +32,7 @@ public class FileProcessingService(
         var connection = await factory.CreateConnectionAsync();
         var channel = await connection.CreateChannelAsync();
         await channel.QueueDeclareAsync(queue: Queues.MessageReply, exclusive: false);
+        
         var consumer = new AsyncEventingBasicConsumer(channel);
         var tasks = new Dictionary<string, TaskCompletionSource<bool>>();
         var allTasks = new List<Task<bool>>();
@@ -52,41 +54,25 @@ public class FileProcessingService(
 
         foreach (var tuple in messages)
         {
-            var loggingBody = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new LoggingRequest
+            await producer.PublishAsync(Queues.Logging, new LoggingRequest
             {
                 Message = $"[{ServiceName}]: Processing message #{tuple.Index}",
                 LogType = LogType.Information
-            }));
+            });
             
-            await channel.BasicPublishAsync(
-                exchange: string.Empty,
-                routingKey: Queues.Logging,
-                mandatory: false,           
-                body: loggingBody);
-            
-            // Message sending
             var correlationId = Guid.NewGuid().ToString();
             var tcs = new TaskCompletionSource<bool>();
             tasks[correlationId] = tcs;
             allTasks.Add(tcs.Task);
-            
-            var messageBody = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new MessageRequest
+
+            await producer.PublishAsync(Queues.Message, new MessageRequest
             {
                 Message = tuple.Message,
                 Index = tuple.Index
-            }));
-
-            await channel.BasicPublishAsync(
-                exchange: string.Empty,
-                routingKey: Queues.Message,
-                mandatory: false,
-                basicProperties: new BasicProperties { ReplyTo = Queues.MessageReply, CorrelationId = correlationId },
-                body: messageBody);
+            }, new BasicProperties { ReplyTo = Queues.MessageReply, CorrelationId = correlationId });
         }
         
         var isSuccess = (await Task.WhenAll(allTasks)).All(t => t);
-        
-        Console.WriteLine(isSuccess);
         
         await swiftFileRepository.CreateAsync(new SwiftFileEntity
         {
@@ -95,7 +81,7 @@ public class FileProcessingService(
             IsSuccess = isSuccess
         });
         
-        fileMovingService.Move(e, isSuccess ? DestinationType.Succeeded : DestinationType.Failed);
+        await fileMovingService.Move(e, isSuccess ? DestinationType.Succeeded : DestinationType.Failed);
         
         await channel.CloseAsync();
         await connection.CloseAsync();

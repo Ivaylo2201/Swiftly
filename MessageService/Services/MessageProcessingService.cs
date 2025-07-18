@@ -4,7 +4,7 @@ using MessageService.Contracts.IServices;
 using MessageService.Validators;
 using PersistenceService.Contracts.IRepositories;
 using PersistenceService.Entities;
-using PersistenceService.Exceptions;
+using Shared;
 using Shared.Enums;
 using Shared.Producer;
 using Shared.Requests;
@@ -25,21 +25,23 @@ public class MessageProcessingService(
     public async Task<Result<SwiftMessageEntity>> Process(string rawMessage, int index)
     {
         var rawMessageDto = await messageParsingService.ParseToRawMessageDto(rawMessage);
-        
+
         if (rawMessageDto is null)
-            return Result.Failure<SwiftMessageEntity>();
+            return Result.Failure<SwiftMessageEntity>("Unable to aprse");
         
         var result = await new RawMessageDtoValidator().ValidateAsync(rawMessageDto);
         
         if (!result.IsValid)
         {
             var errors = string.Join(", ", result.Errors.Select(error => error.ErrorMessage));
-
-            await producer.PublishToLoggingService(new LoggingRequest
-            {
-                Message = $"[{ServiceName}]: Validation errors at Message #{index} - {errors}",
-                LogType = LogType.Error
-            });
+                
+            await producer.PublishAsync(
+                Queues.Logging,
+                new LoggingRequest
+                {
+                    Message = $"[{ServiceName}]: Validation errors at Message #{index} - {errors}",
+                    LogType = LogType.Error
+                });
             
             return Result.Failure<SwiftMessageEntity>(errors);
         }
@@ -82,31 +84,25 @@ public class MessageProcessingService(
             
             await swiftMessageRepository.CreateAsync(swiftMessage);
             
-            await producer.PublishToLoggingService(new LoggingRequest
-            {
-                Message = $"[{ServiceName}]: Message #{index} successfully processed to a SwiftMessage",
-                LogType = LogType.Success
-            });
+            await producer.PublishAsync(
+                Queues.Logging,
+                new LoggingRequest
+                {
+                    Message = $"[{ServiceName}]: Message #{index} successfully processed to a SwiftMessage",
+                    LogType = LogType.Success
+                });
 
             return Result.Success(swiftMessage);
         }
-        catch (EntityNotFoundException ex)
-        {
-            await producer.PublishToLoggingService(new LoggingRequest
-            {
-                Message = $"[{ServiceName}]: {ex.GetType().FullName} at Message #{index} - {ex.Message}",
-                LogType = LogType.Error
-            });
-            
-            return Result.Failure<SwiftMessageEntity>(ex.Message);
-        }
         catch (Exception ex)
         {
-            await producer.PublishToLoggingService(new LoggingRequest
-            {
-                Message = $"[{ServiceName}]: {ex.GetType().FullName} at Message #{index} - {ex.Message}",
-                LogType = LogType.Error
-            });
+            await producer.PublishAsync(
+                Queues.Logging,
+                new LoggingRequest
+                {
+                    Message = $"[{ServiceName}]: {ex.GetType().FullName} at Message #{index} - {ex.Message}",
+                    LogType = LogType.Error
+                });
             
             return Result.Failure<SwiftMessageEntity>(ex.Message);
         }

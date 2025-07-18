@@ -1,5 +1,6 @@
 ﻿using MessageService.Contracts.IServices;
 using MessageService.DTOs;
+using Shared;
 using Shared.Enums;
 using Shared.Producer;
 using Shared.Requests;
@@ -16,11 +17,13 @@ public class MessageParsingService(IProducer producer) : IMessageParsingService
 
         if (!match.Success)
         {
-            await producer.PublishToLoggingService(new LoggingRequest
-            {
-                Message = $"[{ServiceName}]: Syntax error detected, message parsing terminated.",
-                LogType = LogType.Error
-            });
+            await producer.PublishAsync(
+                Queues.Logging,
+                new LoggingRequest
+                {
+                    Message = $"[{ServiceName}]: Syntax error detected, message parsing terminated.",
+                    LogType = LogType.Error
+                });
 
             return null;
         }

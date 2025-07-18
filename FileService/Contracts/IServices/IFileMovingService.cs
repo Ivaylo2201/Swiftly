@@ -4,5 +4,5 @@ namespace FileService.Contracts.IServices;
 
 public interface IFileMovingService
 {
-    void Move(FileSystemEventArgs e, DestinationType destinationType);
+    Task Move(FileSystemEventArgs e, DestinationType destinationType);
 }

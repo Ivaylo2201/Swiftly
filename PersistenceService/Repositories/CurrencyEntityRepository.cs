@@ -23,11 +23,13 @@ public class CurrencyEntityRepository(
         
         var errorMessage = $"Currency with CurrencyCode '{currencyCode}' not found.";
         
-        await producer.PublishToLoggingService(new LoggingRequest
-        {
-            Message = errorMessage,
-            LogType = LogType.Error
-        });
+        await producer.PublishAsync(
+            Queues.Logging,
+            new LoggingRequest
+            {
+                Message = errorMessage,
+                LogType = LogType.Error,
+            });
         
         throw new EntityNotFoundException(errorMessage);
     }

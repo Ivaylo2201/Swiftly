@@ -28,16 +28,20 @@ public class MessageServiceConsumer(
 
                 if (payload is null)
                 {
-                    await producer.PublishToLoggingService(new LoggingRequest
-                    {
-                        Message = $"[{ServiceName}]: Payload parsing returned null.",
-                        LogType = LogType.Error
-                    });
+                    await producer.PublishAsync(
+                        Queues.Logging,
+                        new LoggingRequest
+                        {
+                            Message = $"[{ServiceName}]: Payload parsing returned null.",
+                            LogType = LogType.Error
+                        }, null, cancellationToken);
 
                     return;
                 }
 
+                Console.WriteLine("here");
                 var processResult = await messageProcessingService.Process(payload.Message, payload.Index);
+                Console.WriteLine("over here " + processResult.IsSuccess);
                 
                 var factory = new ConnectionFactory { HostName = "localhost" };
                 var connection = await factory.CreateConnectionAsync(cancellationToken);
@@ -47,7 +51,7 @@ public class MessageServiceConsumer(
                 
                 await channel.BasicPublishAsync(
                     exchange: string.Empty,
-                    routingKey: ea.BasicProperties.ReplyTo ?? "reply.services.message",
+                    routingKey: ea.BasicProperties.ReplyTo ?? Queues.MessageReply,
                     mandatory: false,           
                     basicProperties: new BasicProperties
                     {
@@ -60,11 +64,13 @@ public class MessageServiceConsumer(
             }
             catch (JsonException ex)
             {
-                await producer.PublishToLoggingService(new LoggingRequest
-                {
-                    Message = $"[{ServiceName}]: Unable to parse the payload. - ${ex.Message}",
-                    LogType = LogType.Error
-                });
+                await producer.PublishAsync(
+                    Queues.Logging,
+                    new LoggingRequest
+                    {
+                        Message = $"[{ServiceName}]: Unable to parse the payload. - ${ex.Message}",
+                        LogType = LogType.Error
+                    }, null, cancellationToken);
             }
         }, cancellationToken);
     }

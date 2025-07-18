@@ -9,32 +9,40 @@ public class Seeder(
     DatabaseContext context,
     IProducer producer) : Data
 {
+    private string ServiceName => GetType().Name;
+    
     public async Task Run()
     {
         try
         {
-            await producer.PublishToLoggingService(new LoggingRequest
-            {
-                Message = "[Seeder]: Beginning database seed...",
-                LogType = LogType.Information
-            });
+            await producer.PublishAsync(
+                Queues.Logging,
+                new LoggingRequest
+                {
+                    Message = $"[{ServiceName}]: Beginning database seed...",
+                    LogType = LogType.Information
+                });
             
             await Clear();
             await Seed();
             
-            await producer.PublishToLoggingService(new LoggingRequest
-            {
-                Message = "[Seeder]: Database seed done.",
-                LogType = LogType.Success
-            });
+            await producer.PublishAsync(
+                Queues.Logging,
+                new LoggingRequest
+                {
+                    Message = $"[{ServiceName}]: Database seed done.",
+                    LogType = LogType.Success
+                });
         }
         catch (Exception ex)
         {
-            await producer.PublishToLoggingService(new LoggingRequest
-            {
-                Message = $"[Seeder]: {ex.Message}",
-                LogType = LogType.Error
-            });
+            await producer.PublishAsync(
+                Queues.Logging,
+                new LoggingRequest
+                {
+                    Message = $"[{ServiceName}]: {ex.Message}",
+                    LogType = LogType.Error
+                });
         }
     }
     
