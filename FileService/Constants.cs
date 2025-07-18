@@ -9,8 +9,8 @@ public static partial class Constants
         private static readonly string FilesDirectory =
             Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "FileService", "Files"));
 
-        public static string Failed => Path.GetFullPath(Path.Combine(FilesDirectory, "Processing"));
-        public static string Succeeded => Path.GetFullPath(Path.Combine(FilesDirectory, "Processing"));
+        public static string Failed => Path.GetFullPath(Path.Combine(FilesDirectory, "Failed"));
+        public static string Succeeded => Path.GetFullPath(Path.Combine(FilesDirectory, "Succeeded"));
         public static string Processing => Path.GetFullPath(Path.Combine(FilesDirectory, "Processing"));
     }
 

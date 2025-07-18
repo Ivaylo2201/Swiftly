@@ -87,8 +87,8 @@ public class MessageProcessingService(
                 Message = $"[{ServiceName}]: Message #{index} successfully processed to a SwiftMessage",
                 LogType = LogType.Success
             });
-            
-            return Result.Failure<SwiftMessageEntity>("Syntax error");
+
+            return Result.Success(swiftMessage);
         }
         catch (EntityNotFoundException ex)
         {

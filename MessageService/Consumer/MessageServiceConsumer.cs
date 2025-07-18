@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using System.Text.Json;
 using MessageService.Contracts.IServices;
+using RabbitMQ.Client;
 using Shared;
 using Shared.Consumer;
 using Shared.Enums;
@@ -36,7 +37,26 @@ public class MessageServiceConsumer(
                     return;
                 }
 
-                await messageProcessingService.Process(payload.Message, payload.Index);
+                var processResult = await messageProcessingService.Process(payload.Message, payload.Index);
+                
+                var factory = new ConnectionFactory { HostName = "localhost" };
+                var connection = await factory.CreateConnectionAsync(cancellationToken);
+                var channel = await connection.CreateChannelAsync(cancellationToken: cancellationToken);
+                
+                var isSuccess = Encoding.UTF8.GetBytes(processResult.IsSuccess.ToString());
+                
+                await channel.BasicPublishAsync(
+                    exchange: string.Empty,
+                    routingKey: ea.BasicProperties.ReplyTo ?? "reply.services.message",
+                    mandatory: false,           
+                    basicProperties: new BasicProperties
+                    {
+                        CorrelationId = ea.BasicProperties.CorrelationId
+                    },
+                    body: isSuccess, 
+                    cancellationToken: cancellationToken);
+
+                await channel.BasicAckAsync(ea.DeliveryTag, false, cancellationToken);
             }
             catch (JsonException ex)
             {
